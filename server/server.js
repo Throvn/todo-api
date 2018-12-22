@@ -10,6 +10,8 @@ var app = express();
 const port = process.env.PORT || 3000;
 app.use(bodyParser.json());
 
+app.use(allowCrossDomain)
+
 app.post('/todos', (req, res) => {
     var todo = new Todo({
         text: req.body.text,
@@ -46,6 +48,10 @@ app.get('/todos/:id', (req, res) => {
     }).catch((e) => {
         res.status(400).send({})
     })
+})
+
+app.get('/', (req,res) => {
+    res.sendFile('../public/index.html')
 })
 
 app.listen(port, () => {
