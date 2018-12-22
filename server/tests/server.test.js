@@ -74,4 +74,19 @@ describe("POST /todos", () => {
             .end(done)
         })
     })
+    describe('GET /todos/:id', () => {
+        it('should retyrn 404 if todo not found', (done) => {
+            request(app)
+            .get('/todos/5c1e1515ae4c3d051e09d8391256')
+            .expect(404)
+            .end(done)
+        })
+
+        it('should retyrn 404 for non-object ids', (done) => {
+            request(app)
+            .get('/todos/5c1e1515ae4')
+            .expect(404)
+            .end(done)
+        })
+    })
 })
