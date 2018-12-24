@@ -81,12 +81,66 @@
                 </div>
                 <div class="footer-copyright">
                   <div class="container">
-                  © 2014 Copyright Text
+                  © 2019 Copyright Text
                   <a class="grey-text text-lighten-4 right" href="#!">More Links</a>
                   </div>
                 </div>
               </footer>
+
+                <!-- Modal Structure -->
+                <div id="modal1" class="modal">
+                  <div class="modal-content">
+                    <div class="row">
+                      <div class="col s9">
+                          <h4>Todo Details</h4>
+                      </div>
+                      <div class="col s3 right-align" id="completedAt">
+                          completedAt
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col s8">
+                          <h5 id="todo-text">Loading</h5>
+                      </div>
+                      <div class="col s4">
+                          <table class="responsive-table">
+                              <tbody>
+                                <tr>
+                                  <th>
+                                    __v
+                                  </th>
+                                  <td id="__v">
+                                    0
+                                  </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                      _id
+                                    </th>
+                                    <td id="_id">
+                                      loading
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                      <th>
+                                        Completed
+                                      </th>
+                                      <td id="completed">
+                                        loading
+                                      </td>
+                                    </tr>
+                              </tbody>
+                            </table>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <a href="#!" class="modal-close waves-effect waves-green btn-flat">Agree</a>
+                  </div>
+                </div>
+                        
       <!--JavaScript at end of body for optimized loading-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
       <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
       <script>
@@ -97,9 +151,24 @@
             $(document).ready(function(){
                 $('.fixed-action-btn').floatingActionButton();
             });
+            $(document).ready(function(){
+              $('.modal').modal();
+            });
+
+            function toggleCompleted(el) {
+              
+              if($(el).hasClass('red')){
+                $(el).removeClass('red')
+                $(el).addClass('green')
+              } else {
+                $(el).removeClass('green')
+                $(el).addClass('red')
+
+              }
+            }
       </script>
       <script>
-          let data, dataAuto = {}, elName;
+          let data, color;
         var getJSON = function(url, callback) {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url, true);
@@ -114,20 +183,82 @@
             };
             xhr.send();
         }
+        var postJSON = function(url, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', url, true);
+            xhr.responseType = 'json';
+            xhr.onload = function() {
+            var status = xhr.status;
+            if (status === 200) {
+                callback(null, xhr.response);
+            } else {
+                callback(status, xhr.response);
+            }
+            };
+            xhr.send();
+        }
+        var deleteJSON = function(url, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('DELETE', url, true);
+            xhr.responseType = 'json';
+            xhr.onload = function() {
+            var status = xhr.status;
+            if (status === 200) {
+                callback(null, xhr.response);
+            } else {
+                callback(status, xhr.response);
+            }
+            };
+            xhr.send();
+        }
+        var patchJSON = function(url, data, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('PATCH', url, true);
+            xhr.responseType = 'json';
+            xhr.onload = function() {
+            var status = xhr.status;
+            if (status === 200) {
+                callback(null, xhr.response);
+            } else {
+                callback(status, xhr.response);
+            }
+            };
+            xhr.send(data);
+        }
         getJSON('https://lit-garden-95717.herokuapp.com/todos', function (status,response) {
             data = response.todos;  
             data.forEach(element => {
-                $('#todos').append('<div class="col offset-s2 s8"> <div class="card "> <div class="card-content"> <p>'+element.text+'</p></div><div class="card-action"> <div class="row"> <div class="col m6 s6"> <a class="waves-effect waves-light btn">Details</a> <a class="waves-effect waves-light btn red">Compleated</a> </div><div class="col m6 s6 "> <p class="right-align">'+element._id+'</p></div></div></div></div></div>')
-                elName = element._id
+              if (element.completed) {
+                color = 'green'
+                patchJSON('https://lit-garden-95717.herokuapp.com/todos/', {completed: true}, function (status, response) {
+                  console.log(response);
+                  
+                })
+              } else {
+                color = 'red'
+                patchJSON('https://lit-garden-95717.herokuapp.com/todos/', {completed: true}, function (status, response) {
+                  console.log(response);
+                  
+                })
+              }
+                $('#todos').append('<div class="col offset-s2 s8"> <div class="card hoverable"> <div class="card-content"> <p>'+element.text+'</p></div><div class="card-action"> <div class="row m0"> <div class="col m6 s6"> <a class="waves-effect waves-light btn show-todo" href="#modal1" id="'+element._id+'">Details</a> <a onclick="toggleCompleted(this)" class="waves-effect waves-light btn '+color+'">Completed</a> </div><div class="col m6 s6 "><a class="delete-todo" id="'+element._id+'"><p class="right-align"><i class="material-icons">delete</i></p></a></div></div></div></div></div>')
             });
+            $('.show-todo').on('click', (e) => {
+              
+              getJSON('https://lit-garden-95717.herokuapp.com/todos/'+e.currentTarget.id, function (status, response) {
+                $('#todo-text').text(response.text)
+                $('#__v').text(response.__v)
+                $('#_id').text(response._id)
+                $('#completed').text(response.completed)
+                $('#completedAt').text(moment(response.completedAt).fromNow())
+                var instance = M.Modal.getInstance(document.getElementById('modal1'));
+                instance.open()
+              })
+              
+              
+            })
         })
-        console.log(dataAuto);
-        
-        $(document).ready(function(){
-            $('input.autocomplete').autocomplete({
-            data: dataAuto
-            });
-        });
+
       </script>
     </body>
   </html>
