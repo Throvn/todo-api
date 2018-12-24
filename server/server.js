@@ -1,3 +1,4 @@
+const path = require('path')
 const express = require('express');
 const bodyParser = require('body-parser');
 const _ = require('lodash')
@@ -104,7 +105,7 @@ app.get('/todos/:id', (req, res) => {
 })
 
 app.get('/', (req,res) => {
-    res.sendFile(__dirname+'../public/index.html')
+    res.sendFile(path.join(__dirname, '../public/index.html'))
 })
 
 app.listen(port, () => {
