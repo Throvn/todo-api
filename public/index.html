@@ -212,18 +212,20 @@
             xhr.send();
         }
         var patchJSON = function(url, data, callback) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('PATCH', url, true);
-            xhr.responseType = 'json';
-            xhr.onload = function() {
-            var status = xhr.status;
-            if (status === 200) {
-                callback(null, xhr.response);
-            } else {
-                callback(status, xhr.response);
-            }
-            };
-            xhr.send(data);
+          var xhr = new XMLHttpRequest();
+          xhr.open("POST", url, true);
+
+          //Send the proper header information along with the request
+          xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+          xhr.onreadystatechange = function() {
+              if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                callback(null, this.response)
+              } else {
+                callback(status, this.response)
+              }
+          }
+          xhr.send("foo=bar&lorem=ipsum"); 
         }
         getJSON('https://lit-garden-95717.herokuapp.com/todos', function (status,response) {
             data = response.todos;  
@@ -236,7 +238,7 @@
                 })
               } else {
                 color = 'red'
-                patchJSON('https://lit-garden-95717.herokuapp.com/todos/', {completed: true}, function (status, response) {
+                patchJSON('https://lit-garden-95717.herokuapp.com/todos/', {completed: false}, function (status, response) {
                   console.log(response);
                   
                 })
@@ -250,7 +252,11 @@
                 $('#__v').text(response.__v)
                 $('#_id').text(response._id)
                 $('#completed').text(response.completed)
-                $('#completedAt').text(moment(response.completedAt).fromNow())
+                if (moment(response.completedAt).isValid()) {
+                  $('#completedAt').text(moment(response.completedAt).fromNow())
+                } else {
+                  $('#completedAt').text('not completed')
+                }
                 var instance = M.Modal.getInstance(document.getElementById('modal1'));
                 instance.open()
               })

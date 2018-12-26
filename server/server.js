@@ -104,6 +104,22 @@ app.get('/todos/:id', (req, res) => {
     })
 })
 
+
+app.post('/users', (req, res) => {
+    const body = _.pick(req.body, ['email','password'])
+    let user = new User(body)
+
+    user.save().then((user) => {
+        return user.generateAuthToken();
+    }).then((token) => {
+        res.header('x-auth', token).send(user.toJSON())
+    }).catch((e) => {
+        console.log(e);
+        
+        res.status(400).send(e)
+    })
+})
+
 app.get('/', (req,res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'))
 })
