@@ -35,7 +35,6 @@ var UserSchema = new mongoose.Schema({
 UserSchema.methods.toJSON = function() {
     var user = this;
     var userObject = user.toObject();
-    console.log(userObject);
     
     return _.pick(userObject, ['_id', 'email'])
 }
@@ -80,6 +79,22 @@ UserSchema.statics.findByToken = function (token) {
         '_id': decoded._id,
         'tokens.token': token,
         'tokens.access': 'auth'
+    })
+}
+
+UserSchema.statics.findByCredentials = function(email, password) {
+    var User = this;
+
+    return User.findOne({email}).then((user) => {
+        if(!user){
+            Promise.reject();
+        }
+        return new Promise((resolve,reject) => {
+            
+            bcrypt.compare(password, user.password, (err,res) => {
+                return res ? resolve(user) : reject(err)
+            })
+        })
     })
 }
 
